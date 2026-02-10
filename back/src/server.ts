@@ -1,9 +1,13 @@
 import http from 'http';
 import express from 'express';
 import { Server } from 'socket.io';
+import { DocumentService } from './services/document.service';
+import { SqliteDatabase } from './db/sqliteDatabase';
 
 const app = express();
 const httpServer = http.createServer(app);
+const database = new SqliteDatabase("documents.sql");
+const documentService = new DocumentService(database);
 
 const io = new Server(httpServer, {
     cors: {

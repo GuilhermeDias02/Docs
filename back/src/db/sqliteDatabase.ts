@@ -1,15 +1,11 @@
 import Database from 'better-sqlite3';
-import { DatabaseService } from './database';
+import { DatabaseInterface } from './database';
 import { Document } from '../models/document.model';
 
-export class SqliteDatabase extends DatabaseService<Database.Database> {
+export class SqliteDatabase implements DatabaseInterface {
     private db: Database.Database | null = null;
-    private readonly dbPath: string;
 
-    private constructor(dbPath: string) {
-        super();
-        this.dbPath = dbPath;
-    }
+    constructor(private readonly dbPath: string) { }
 
     public connect(dbPath: string): this {
         this.db = new Database(dbPath);

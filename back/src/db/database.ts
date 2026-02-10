@@ -1,42 +1,42 @@
 import { Document } from "../models/document.model";
 
-export abstract class DatabaseService<TConnection> {
+export interface DatabaseInterface {
     /**
      * Initiate database connection
-     * @param database Database name
+     * @param database Database path or name
      */
-    abstract connect(database: string): this;
+    connect(database: string): this;
     /**
      * Close database connection
      */
-    abstract close(): void;
+    close(): void;
     /**
      * Update database structure
      */
-    abstract runMigrations(): void;
+    runMigrations(): void;
 
     /**
      * Fetch all Documents
      */
-    abstract getAll(): Document[];
+    getAll(): Document[];
     /**
      * Fetch a Document by id
      * @param id Document's id
      */
-    abstract get(id: number): Document | null;
+    get(id: number): Document | null;
     /**
      * Register the new Document
      * @param data Document to add
      */
-    abstract post(data: Document): Document | null;
+    post(data: Document): Document | null;
     /**
      * Update a documents info
      * @param data updated Document info
      */
-    abstract update(data: Document): Document | null;
+    update(data: Document): Document | null;
     /**
      * Deletes the Document by its id
-     * @param id Document to update
+     * @param id Document to delete
      */
-    abstract delete(id: number): boolean;
+    delete(id: number): boolean;
 }
