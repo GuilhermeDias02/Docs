@@ -20,35 +20,31 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
 
   const selectDoc = (docID: number) => {
-    socket?.send(JSON.stringify({ type: 'doc', docID: docID }))
+    socket?.emit('doc', docID)
   }
 
   const addText = (wordPos: number, wordText: string, additionPos: number, additionText: string) => {
-    socket?.send(
-      JSON.stringify({
-        type: 'addText',
-        data: {
-          wordPos,
-          wordText,
-          additionPos,
-          additionText,
-        },
-      }),
-    )
+    socket?.emit('message', {
+      type: 'addText',
+      data: {
+        wordPos,
+        wordText,
+        additionPos,
+        additionText,
+      },
+    })
   }
 
   const deleteText = (wordPos: number, wordText: string, deletePos: number, deleteSize: number) => {
-    socket?.send(
-      JSON.stringify({
-        type: 'deleteText',
-        data: {
-          wordPos,
-          wordText,
-          deletePos,
-          deleteSize,
-        },
-      }),
-    )
+    socket?.emit('message', {
+      type: 'deleteText',
+      data: {
+        wordPos,
+        wordText,
+        deletePos,
+        deleteSize,
+      },
+    })
   }
   useEffect(() => {
     const newSocket = io('http://localhost:3000', {
