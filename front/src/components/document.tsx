@@ -1,6 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
 import { WebSocketContext } from '../context/wsprovider'
 import { DocumentIcon } from '@heroicons/react/24/outline'
+import './document.css'
+import { Textarea } from './textarea'
 
 export function Document({ docID }: { docID: number }) {
   const { selectDoc, socket } = useContext(WebSocketContext)
@@ -9,7 +11,7 @@ export function Document({ docID }: { docID: number }) {
   useEffect(() => {
     selectDoc(docID)
     socket?.on('docComplet', (...args) => {
-      setText(args[0]['text'])
+      setText(args[0]['content'] ?? args[0]['text'] ?? '')
     })
 
     return () => {
@@ -31,20 +33,14 @@ export function Document({ docID }: { docID: number }) {
             </div>
           </div>
         </div>
-        <button className="docs-share-btn" type="button">
-          Share
-        </button>
       </header>
       <div className="docs-page-wrap">
-        <article className="docs-page">
+        <article className="">
           {text === null ? (
-            <p className="docs-loading">Loading your document...</p>
+            // text animation
+            <p className="docs-loading text-animation-pulse">Chargement du document...</p>
           ) : (
-            lines.map((line, idx) => (
-              <p key={`${idx}-${line}`} className="docs-paragraph">
-                {line || '\u00A0'}
-              </p>
-            ))
+            <Textarea text={text} />
           )}
         </article>
       </div>
