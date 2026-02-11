@@ -40,7 +40,7 @@ export interface DatabaseInterface {
      * @param data updated Document info
      * @returns The updated Document or throws an error
      */
-    update(data: Document): Document | null;
+    update(data: Document): Document;
     /**
      * Deletes the Document by its id
      * @param id Document to delete

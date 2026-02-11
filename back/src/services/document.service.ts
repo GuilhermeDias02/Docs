@@ -30,4 +30,18 @@ export class DocumentService {
             throw new Error(`Erreur lors du traitement du Document à l'id ${id}:\n\t${error}`);
         }
     }
+
+    public updateContent(id: number, newContent: string): Document {
+        try {
+            let doc = this.db.get(id);
+            if (!doc) {
+                throw new Error(`Il n'existe aucun document avec l'id ${id}`);
+            }
+
+            doc.content = newContent;
+            return this.db.update(doc);
+        } catch (error) {
+            throw new Error(`Erreur lors du traitement du Document à l'id ${id}:\n\t${error}`);
+        }
+    }
 }

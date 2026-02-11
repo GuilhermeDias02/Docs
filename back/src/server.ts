@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
+        socket.rooms.forEach((room) => socket.leave(room));
         console.log('Client disconnected:', socket.id);
     });
 });

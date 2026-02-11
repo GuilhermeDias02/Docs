@@ -1,6 +1,11 @@
 export interface Message {
     type: string,
     data: {
-        docID?: number
+        docID?: number,
+        wordPos?: number,
+        wordText?: string,
+        additionPos?: number,
+        additionText?: string
+
     }
 }

@@ -90,12 +90,17 @@ export class SqliteDatabase implements DatabaseInterface {
         }
     }
 
-    update(updatedDocument: Document): Document | null {
+    update(updatedDocument: Document): Document {
         try {
             const db = this.getConnection();
             const preparedRequest = db.prepare(`UPDATE document SET name=?, content=? WHERE id=?`);
             preparedRequest.run(updatedDocument.name, updatedDocument.content ?? null, updatedDocument.id);
-            return this.get(updatedDocument.id);
+
+            const documentInDb = this.get(updatedDocument.id);
+            if (!documentInDb) {
+                throw new Error(`Le Document avec l'id ${updatedDocument.id} n'existe plus`)
+            }
+            return documentInDb;
         } catch (error) {
             throw new Error(`Erreur dans la modification du document à l'identifiant ${updatedDocument.id}:\n\t${error}}`);
         }
