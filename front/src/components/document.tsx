@@ -50,7 +50,7 @@ export function Document({ docID }: { docID: number }) {
             <Textareav2 initialtext={text || ''} updateCursor={updateCursor} />
           )}
         </article>
-        <button onClick={() => setUpdateCursor({ socketId: socket?.id || '', cursorPos: 0 })}>Update Cursor</button>
+        <button onClick={() => setUpdateCursor({ socketId: socket?.id || '', cursorPos: 10 })}>Update Cursor</button>
       </div>
     </main>
   )

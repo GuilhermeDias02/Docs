@@ -78,6 +78,69 @@
   resize: none;
   overflow: hidden;
 }
+
+.docs-page2-stack {
+  position: relative;
+  width: min(92vw, 840px);
+  margin-top: 1rem;
+}
+
+.docs-page2-input,
+.docs-page2-mirror {
+  width: 100%;
+  margin-top: 0;
+}
+
+.docs-page2-mirror {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #1f2438;
+  overflow: hidden;
+}
+
+.docs-page2-input {
+  position: relative;
+  z-index: 1;
+  background-color: transparent;
+  color: transparent;
+  caret-color: #1f2438;
+}
+
+.docs-cursor-marker {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  vertical-align: text-top;
+}
+
+.docs-cursor-marker__bar {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 2px;
+  height: 1.25em;
+}
+
+.docs-cursor-marker__label {
+  position: absolute;
+  left: -1px;
+  top: -1.35em;
+  color: #ffffff;
+  font-size: 0.65rem;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 4px;
+  padding: 0.18rem 0.3rem;
+}
+
+.docs-page2-indicator {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: #1f2438;
+}
 .docs-loading {
   margin: 0;
   font-size: 1.05rem;
