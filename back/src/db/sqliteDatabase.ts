@@ -8,32 +8,44 @@ export class SqliteDatabase implements DatabaseInterface {
     constructor(private readonly dbPath: string) { }
 
     public connect(dbPath: string): this {
-        this.db = new Database(dbPath);
-        return this;
+        try {
+            this.db = new Database(dbPath);
+            return this;
+        } catch (error) {
+            throw new Error(`Erreur lors de la connection à la base de données:\n\t${error}`);
+        }
     }
 
     private getConnection(): Database.Database {
         if (!this.db) {
-            throw new Error('Database not connected. Call connect() first.');
+            throw new Error('Aucune connexion à la base de données. Appellez connect() avant.');
         }
         return this.db;
     }
 
     public runMigrations(): void {
-        const db = this.getConnection();
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS document (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                content TEXT
-            );
-        `);
+        try {
+            const db = this.getConnection();
+            db.exec(`
+                CREATE TABLE IF NOT EXISTS document (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    content TEXT
+                );
+            `);
+        } catch (error) {
+            throw new Error(`Erreur lors de la migration:\n\t${error}`);
+        }
     }
 
     public close(): void {
-        if (this.db) {
-            this.db.close();
-            this.db = null;
+        try {
+            if (this.db) {
+                this.db.close();
+                this.db = null;
+            }
+        } catch (error) {
+            throw new Error(`Erreur lors de la fermeture de la connexion à la base de données:\n\t${error}`);
         }
     }
 
@@ -42,8 +54,7 @@ export class SqliteDatabase implements DatabaseInterface {
             const db = this.getConnection();
             return db.prepare(`SELECT * FROM document`).all() as Document[];
         } catch (error) {
-            console.error(`Erreur lors de la récupération de tous les documents: ${error}`);
-            return [];
+            throw new Error(`Erreur lors de la récupération de tous les documents:\n\t${error}`);
         }
     }
 
@@ -53,12 +64,11 @@ export class SqliteDatabase implements DatabaseInterface {
             const row = db.prepare(`SELECT * FROM document WHERE id = ?`).get(id) as Document;
             return row ?? null;
         } catch (error) {
-            console.error(`Erreur dans la récupération du document à l'identifiant ${id}: ${error}}`);
-            return null;
+            throw new Error(`Erreur dans la récupération du document à l'identifiant ${id}:\n\t${error}}`);
         }
     }
 
-    post(newDocument: Document): Document | null {
+    post(newDocument: Document): Document {
         try {
             const db = this.getConnection();
             const preparedRequest = db.prepare(`INSERT INTO document (name, content) VALUES (?, ?)`);
@@ -69,8 +79,7 @@ export class SqliteDatabase implements DatabaseInterface {
                 content: newDocument.content
             };
         } catch (error) {
-            console.error(`Erreur lors de l'ajout d'un document: ${error}}`);
-            return null;
+            throw new Error(`Erreur lors de l'ajout d'un document:\n\t${error}}`);
         }
     }
 
@@ -78,11 +87,10 @@ export class SqliteDatabase implements DatabaseInterface {
         try {
             const db = this.getConnection();
             const preparedRequest = db.prepare(`UPDATE document SET name=?, content=? WHERE id=?`);
-            const result = preparedRequest.run(updatedDocument.name, updatedDocument.content ?? null, updatedDocument.id);
+            preparedRequest.run(updatedDocument.name, updatedDocument.content ?? null, updatedDocument.id);
             return this.get(updatedDocument.id);
         } catch (error) {
-            console.error(`Erreur dans la modification du document à l'identifiant ${updatedDocument.id}: ${error}}`);
-            return null;
+            throw new Error(`Erreur dans la modification du document à l'identifiant ${updatedDocument.id}:\n\t${error}}`);
         }
     }
 
@@ -100,8 +108,7 @@ export class SqliteDatabase implements DatabaseInterface {
             }
             return false;
         } catch (error) {
-            console.error(`Erreur dans la suppression du document à l'identifiant ${id}: ${error}}`);
-            return false;
+            throw new Error(`Erreur dans la suppression du document à l'identifiant ${id}:\n\t${error}}`);
         }
     }
 }
