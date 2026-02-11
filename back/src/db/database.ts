@@ -6,7 +6,7 @@ export interface DatabaseInterface {
      * @param database Database path or name
      * @returns this or throws an error
      */
-    connect(database: string): this;
+    connect(): this;
     /**
      * Close database connection
      * @returns void or throws an error
