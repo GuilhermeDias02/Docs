@@ -2,9 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
 :root {
-  --docs-bg: #f3f5fb;
+  --docs-bg: hsl(var(--bg-100)/var(--tw-bg-opacity));
   --docs-surface: #ffffff;
-  --docs-surface-soft: #f7f8fc;
+  --docs-surface-soft: white;
   --docs-border: #d9dce8;
   --docs-border-strong: #c6cbdd;
   --docs-text: #1f2744;

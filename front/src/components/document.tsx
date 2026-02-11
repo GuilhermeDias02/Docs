@@ -1,13 +1,15 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState, useCallback } from 'react'
 import { WebSocketContext } from '../context/wsprovider'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import './document.css'
-import { Textarea } from './textarea'
+import { Textareav2 } from './textareav2'
+import type { Cursor } from '../types/document'
 
 export function Document({ docID }: { docID: number }) {
   const { selectDoc, socket } = useContext(WebSocketContext)
   const [text, setText] = useState<string>('')
   const [documentName, setDocumentName] = useState<string>('')
+  const [updateCursor, setUpdateCursor] = useState<Cursor | null>(null)
 
   useEffect(() => {
     selectDoc(docID)
@@ -40,14 +42,15 @@ export function Document({ docID }: { docID: number }) {
         </div>
       </header>
       <div className="docs-page-wrap">
-        <article className="">
+        <article>
           {text === null ? (
             // text animation
             <p className="docs-loading text-animation-pulse">Chargement du document...</p>
           ) : (
-            <Textarea text={text || ''} />
+            <Textareav2 initialtext={text || ''} updateCursor={updateCursor} />
           )}
         </article>
+        <button onClick={() => setUpdateCursor({ socketId: socket?.id || '', cursorPos: 0 })}>Update Cursor</button>
       </div>
     </main>
   )
