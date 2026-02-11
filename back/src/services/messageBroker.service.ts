@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { DocumentService } from "./document.service";
+import { Message } from '../models/message.model';
 
 export class MessageBroker {
     constructor(
@@ -20,12 +21,12 @@ export class MessageBroker {
         }
     }
 
-    public messageManager(socket: Socket, messsage: string): void {
-        switch (typeof JSON.parse(messsage).data) {
-            case 'number':
-                this.sendDoc(socket, JSON.parse(messsage).data);
+    public messageManager(socket: Socket, message: Message): void {
+        switch (message.type) {
+            case 'doc':
+                this.sendDoc(socket, message.data.docID ?? 0);
                 break;
-            case 'object':
+            default:
 
                 break
         }
@@ -33,12 +34,18 @@ export class MessageBroker {
 
     public sendDoc(socket: Socket, id: number): void {
         try {
+            if (id <= 0) {
+                throw new Error("Le numéro doit être supérieur ou égal à 0.");
+            }
             socket.emit("message", {
                 type: "docComplet",
                 data: this.documentService.getById(id)
             });
         } catch (error) {
-            socket.emit(JSON.stringify({ type: "error", error: `Le document à l'id ${id} n'a pas pu être récupéré` }));
+            socket.emit("message", {
+                type: "error",
+                error: `Le document à l'id ${id} n'a pas pu être récupéré: ${error}`
+            });
         }
     }
 }
