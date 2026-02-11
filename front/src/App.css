@@ -1,42 +1,32 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
+:root {
+  --docs-bg: #f3f5fb;
+  --docs-surface: #ffffff;
+  --docs-surface-soft: #f7f8fc;
+  --docs-border: #d9dce8;
+  --docs-border-strong: #c6cbdd;
+  --docs-text: #1f2744;
+  --docs-muted: #586084;
+  --docs-accent: #2264f5;
+  --docs-shadow: 0 20px 50px rgba(45, 56, 102, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--docs-text);
+  font-family: 'SN Pro', sans-serif;
+  background:
+    radial-gradient(1200px 400px at -20% -10%, #e5ecff 0%, transparent 70%),
+    radial-gradient(800px 300px at 110% 0%, #e8f1ff 0%, transparent 75%), var(--docs-bg);
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  min-height: 100vh;
 }
