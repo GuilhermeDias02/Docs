@@ -3,7 +3,10 @@ import { Document } from "../models/document.model";
 import { DocumentListDto } from "../models/documentListDto.model";
 
 export class DocumentService {
-    constructor(private readonly db: DatabaseInterface) { }
+    constructor(private readonly db: DatabaseInterface) {
+        this.db.connect()
+            .runMigrations();
+    }
 
     public getAll(): DocumentListDto[] {
         try {

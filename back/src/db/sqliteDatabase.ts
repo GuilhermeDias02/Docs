@@ -4,12 +4,17 @@ import { Document } from '../models/document.model';
 
 export class SqliteDatabase implements DatabaseInterface {
     private db: Database.Database | null = null;
+    private readonly dbPath: string;
 
-    constructor(private readonly dbPath: string) { }
+    constructor(dbPath: string) {
+        this.dbPath = dbPath;
+    }
 
-    public connect(dbPath: string): this {
+    public connect(): this {
         try {
-            this.db = new Database(dbPath);
+            console.log("Connexion à la base de données...");
+            this.db = new Database(this.dbPath);
+            console.log("Connecté à la base de données.");
             return this;
         } catch (error) {
             throw new Error(`Erreur lors de la connection à la base de données:\n\t${error}`);
@@ -25,6 +30,7 @@ export class SqliteDatabase implements DatabaseInterface {
 
     public runMigrations(): void {
         try {
+            console.log("Mise à jour de la structure de la db.");
             const db = this.getConnection();
             db.exec(`
                 CREATE TABLE IF NOT EXISTS document (
@@ -33,6 +39,7 @@ export class SqliteDatabase implements DatabaseInterface {
                     content TEXT
                 );
             `);
+            console.log("Migration effectuée.");
         } catch (error) {
             throw new Error(`Erreur lors de la migration:\n\t${error}`);
         }
