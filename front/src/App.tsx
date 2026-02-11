@@ -1,13 +1,18 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { DocumentPage } from './pages/document'
+import { DocumentsListPage } from './pages/documents-list'
+import { WebSocketProvider } from './context/wsprovider'
 import './App.css'
 
 function App() {
   return (
-    <Routes>
-      {/* <Route path="/documents" element={<DocumentsList />} /> */}
-      <Route path="/documents/:id" element={<DocumentPage />} />
-    </Routes>
+    <WebSocketProvider>
+      <Routes>
+        <Route path="/" element={<DocumentsListPage />} />
+        <Route path="/documents" element={<Navigate to="/" replace />} />
+        <Route path="/documents/:id" element={<DocumentPage/>} />
+      </Routes>
+    </WebSocketProvider>
   )
 }
 
