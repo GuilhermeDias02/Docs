@@ -7,11 +7,16 @@ import { Textarea } from './textarea'
 export function Document({ docID }: { docID: number }) {
   const { selectDoc, socket } = useContext(WebSocketContext)
   const [text, setText] = useState<string>('')
+  const [documentName, setDocumentName] = useState<string>('')
 
   useEffect(() => {
     selectDoc(docID)
     socket?.on('message', (...args) => {
-      setText(args[0]['data'].content)
+      switch (args[0]['type']) {
+        case 'docComplet':
+          setText(args[0]['data'].content)
+          setDocumentName(args[0]['data'].name)
+      }
     })
 
     return () => {
@@ -28,7 +33,7 @@ export function Document({ docID }: { docID: number }) {
           <div className="docs-brand__title-group">
             <DocumentIcon className="w-10 h-10" color="var(--docs-accent)" />
             <div className="flex flex-col">
-              <h1 className="docs-brand__title">Document {docID}</h1>
+              <h1 className="docs-brand__title">{documentName.length > 0 ? documentName : 'Document ' + docID}</h1>
               <span className="docs-brand__subtitle">Enregistré dans le nuage</span>
             </div>
           </div>
