@@ -20,7 +20,18 @@ export class MessageBroker {
         }
     }
 
-    // public messageManager(socket: Socket, messsage: ?): void {
+    public messageManager(socket: Socket, messsage: string): void {
+        switch (typeof JSON.parse(messsage).data) {
+            case 'number':
+                this.sendDoc(socket, JSON.parse(messsage).data);
+                break;
+            case 'object':
 
-    // }
+                break
+        }
+    }
+
+    public sendDoc(socket: Socket, id: number): void {
+
+    }
 }

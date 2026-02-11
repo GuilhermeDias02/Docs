@@ -25,9 +25,7 @@ io.on('connection', (socket) => {
     messageBrokerService.sendDocumentList(socket);
 
     socket.on('message', (msg: string) => {
-    // console.log('Message received:', msg);
-    // io.emit('message', msg);
-    // messageBrokerService.messageManager(socket, message);
+        messageBrokerService.messageManager(socket, msg);
     });
 
     socket.on('disconnect', () => {
