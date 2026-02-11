@@ -3,11 +3,10 @@ import express from 'express';
 import { Server } from 'socket.io';
 import { DocumentService } from './services/document.service';
 import { SqliteDatabase } from './db/sqliteDatabase';
+import { MessageBroker } from './services/messageBroker.service';
 
 const app = express();
 const httpServer = http.createServer(app);
-const database = new SqliteDatabase("documents.sql");
-const documentService = new DocumentService(database);
 
 const io = new Server(httpServer, {
     cors: {
@@ -15,12 +14,20 @@ const io = new Server(httpServer, {
     },
 });
 
+const messageBrokerService = new MessageBroker(
+    io,
+    new DocumentService(new SqliteDatabase("documents.sql"))
+);
+
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
-    socket.on('chat message', (msg: string) => {
-        console.log('Message received:', msg);
-        io.emit('chat message', msg);
+    messageBrokerService.sendDocumentList(socket);
+
+    socket.on('message', (msg: string) => {
+    // console.log('Message received:', msg);
+    // io.emit('message', msg);
+    // messageBrokerService.messageManager(socket, message);
     });
 
     socket.on('disconnect', () => {
