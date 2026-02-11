@@ -20,7 +20,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
 
   const selectDoc = (docID: number) => {
-    socket?.emit('doc', docID)
+    socket?.emit('message', {
+      type: 'doc',
+      data: {
+        docID,
+      },
+    })
   }
 
   const addText = (wordPos: number, wordText: string, additionPos: number, additionText: string) => {
