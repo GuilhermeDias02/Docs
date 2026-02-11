@@ -16,7 +16,7 @@ const io = new Server(httpServer, {
 
 const messageBrokerService = new MessageBroker(
     io,
-    new DocumentService(new SqliteDatabase("documents.sql"))
+    new DocumentService(new SqliteDatabase("documents.db"))
 );
 
 io.on('connection', (socket) => {
