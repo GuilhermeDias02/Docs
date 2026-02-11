@@ -6,16 +6,16 @@ import { Textarea } from './textarea'
 
 export function Document({ docID }: { docID: number }) {
   const { selectDoc, socket } = useContext(WebSocketContext)
-  const [text, setText] = useState<string | null>(null)
+  const [text, setText] = useState<string>('')
 
   useEffect(() => {
     selectDoc(docID)
-    socket?.on('docComplet', (...args) => {
-      setText(args[0]['content'] ?? args[0]['text'] ?? '')
+    socket?.on('message', (...args) => {
+      setText(args[0]['data'].content)
     })
 
     return () => {
-      socket?.off('docComplet')
+      socket?.off('message')
     }
   }, [docID, selectDoc, socket])
 
@@ -40,7 +40,7 @@ export function Document({ docID }: { docID: number }) {
             // text animation
             <p className="docs-loading text-animation-pulse">Chargement du document...</p>
           ) : (
-            <Textarea text={text} />
+            <Textarea text={text || ''} />
           )}
         </article>
       </div>

@@ -18,4 +18,16 @@ export class DocumentService {
             throw new Error(`Erreur lors du traitement de la liste des Documents:\n\t${error}`);
         }
     }
+
+    public getById(id: number): Document {
+        try {
+            const doc = this.db.get(id);
+            if (!doc) {
+                throw new Error(`Il n'existe aucun document avec l'id ${id}`);
+            }
+            return doc;
+        } catch (error) {
+            throw new Error(`Erreur lors du traitement du Document à l'id ${id}:\n\t${error}`);
+        }
+    }
 }

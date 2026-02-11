@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { DocumentService } from './services/document.service';
 import { SqliteDatabase } from './db/sqliteDatabase';
 import { MessageBroker } from './services/messageBroker.service';
+import { Message } from './models/message.model';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -24,10 +25,8 @@ io.on('connection', (socket) => {
 
     messageBrokerService.sendDocumentList(socket);
 
-    socket.on('message', (msg: string) => {
-    // console.log('Message received:', msg);
-    // io.emit('message', msg);
-    // messageBrokerService.messageManager(socket, message);
+    socket.on('message', (msg: Message) => {
+        messageBrokerService.messageManager(socket, msg);
     });
 
     socket.on('disconnect', () => {
