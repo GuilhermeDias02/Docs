@@ -1,0 +1,6 @@
+node_modules/.pnpm/engine.io@6.6.5/node_modules/engine.io/build/server.d.ts(3,47): error TS7016: Could not find a declaration file for module 'ws'. '/home/arnaud/efrei/Docs/back/node_modules/.pnpm/ws@8.18.3/node_modules/ws/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/ws` if it exists or add a new declaration (.d.ts) file containing `declare module 'ws';`
+node_modules/.pnpm/engine.io@6.6.5/node_modules/engine.io/build/transport.d.ts(6,32): error TS7016: Could not find a declaration file for module 'ws'. '/home/arnaud/efrei/Docs/back/node_modules/.pnpm/ws@8.18.3/node_modules/ws/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/ws` if it exists or add a new declaration (.d.ts) file containing `declare module 'ws';`
+node_modules/.pnpm/engine.io@6.6.5/node_modules/engine.io/build/transports/websocket.d.ts(3,47): error TS7016: Could not find a declaration file for module 'ws'. '/home/arnaud/efrei/Docs/back/node_modules/.pnpm/ws@8.18.3/node_modules/ws/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/ws` if it exists or add a new declaration (.d.ts) file containing `declare module 'ws';`
