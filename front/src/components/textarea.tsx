@@ -13,7 +13,7 @@ export function Textarea({ text }: { text: string }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       console.log('User stopped writing:', chunks)
-    }, 500)
+    }, 1000)
 
     return () => clearTimeout(timer)
   }, [chunks])
