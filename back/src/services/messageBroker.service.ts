@@ -32,6 +32,13 @@ export class MessageBroker {
     }
 
     public sendDoc(socket: Socket, id: number): void {
-
+        try {
+            socket.emit("message", {
+                type: "docComplet",
+                data: this.documentService.getById(id)
+            });
+        } catch (error) {
+            socket.emit(JSON.stringify({ type: "error", error: `Le document à l'id ${id} n'a pas pu être récupéré` }));
+        }
     }
 }
