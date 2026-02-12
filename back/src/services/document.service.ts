@@ -130,7 +130,7 @@ export class DocumentService {
                 throw new Error(`Le document à l'id ${docId} n'existe pas.`);
             }
             if (!doc.content || doc.content.length < charPos) {
-                throw new Error("La position du charatère n'es pqs bonne");
+                throw new Error("La position du charatère n'es pas bonne");
             }
 
             // Insert the char inside doc.content at the charPos position
@@ -146,6 +146,35 @@ export class DocumentService {
             };
         } catch (error) {
             throw new Error(`Erreur lors du traitement d'un nouveau caratère`)
+        }
+    }
+
+    public delChar(charPos: number, docId: number): number {
+        try {
+            //ne pas traiter la demande si modifications en cours
+            while (this.isDocumentBeingModified.get(docId)) {
+                continue;
+            }
+            this.isDocumentBeingModified.set(docId, true);
+
+            let doc = this.db.get(docId);
+            if (!doc) {
+                throw new Error(`Le document à l'id ${docId} n'existe pas.`);
+            }
+            if (!doc.content || doc.content.length < charPos) {
+                throw new Error("La position du charatère n'es pas bonne");
+            }
+
+            // Delete the character at the charPos position
+            const before = doc.content.slice(0, charPos);
+            const after = doc.content.slice(charPos + 1);
+            doc.content = before + after;
+            this.db.update(doc);
+            this.isDocumentBeingModified.set(docId, false);
+
+            return charPos;
+        } catch (error) {
+            throw new Error(`Erreur lors du traitement de la suppression d'un caratère`);
         }
     }
 }

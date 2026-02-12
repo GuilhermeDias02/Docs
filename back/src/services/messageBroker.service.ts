@@ -48,8 +48,11 @@ export class MessageBroker {
         } as TextToAdd);
             break;
         case "addChar":
-
-        break;
+            this.addChar(socket, message.data.char ?? "", message.data.pos ?? 0);
+            break;
+        case "rmChar":
+            this.delChar(socket, message.data.pos ?? 0);
+            break;
       case "cursor":
         const cursorPos = message.data.cursorPos;
         if (cursorPos) {
@@ -253,6 +256,10 @@ export class MessageBroker {
 
     public addChar(socket: Socket, char: string, pos: number): void {
         try {
+            if (!char || char.length !== 1) {
+                throw new Error("Le param char doit être un seul caractère et non vide.");
+            }
+
             const room = this.getSocketRoom(socket);
             const newChar = this.documentService.addChar(char, pos, this.getDocIdByRoom(room));
             socket.to(room).emit("message", {
@@ -266,6 +273,24 @@ export class MessageBroker {
             socket.emit("message", {
                 type: "error",
                 error: `Erreur lors de l'ajout d'un nouveau charactère {char:${char}, pos:${pos}}:\n\t${error}`,
+            });
+        }
+    }
+
+    public delChar(socket: Socket, pos: number): void {
+        try {
+            const room = this.getSocketRoom(socket);
+            const deletedPos = this.documentService.delChar(pos, this.getDocIdByRoom(room));
+            socket.to(room).emit("message", {
+                type: "addChar",
+                data: {
+                    pos: deletedPos
+                }
+            });
+        } catch (error) {
+            socket.emit("message", {
+                type: "error",
+                error: `Erreur lors de la suppression d'un charactère {pos: ${pos}}: \n\t${error}`,
             });
         }
     }
