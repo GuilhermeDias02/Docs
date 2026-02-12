@@ -66,4 +66,24 @@ export class DocumentService {
 
         return docCursorPositions;
     }
+
+    public deleteCurorPos(docId: number, socketId: string): CursorPos[] {
+        const docCursorPositions = this.cursorsPos.get(docId);
+        if (!docCursorPositions) {
+            return [];
+        }
+
+        const index = docCursorPositions.findIndex((pos: CursorPos) => pos.socketId === socketId);
+        if (index !== -1) {
+            docCursorPositions.splice(index, 1);
+        }
+
+        // If no more cursors for this doc, optionally remove the map entry
+        if (docCursorPositions.length === 0) {
+            this.cursorsPos.delete(docId);
+            return [];
+        }
+
+        return docCursorPositions;
+    }
 }
