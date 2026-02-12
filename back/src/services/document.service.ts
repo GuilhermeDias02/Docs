@@ -133,7 +133,7 @@ export class DocumentService {
                 doc.content = "";
             }
             if (doc.content.length < charPos - 1) {
-                throw new Error("La position du charatère n'es pas bonne");
+                throw new Error("La position du charatère n'est pas bonne");
             }
 
             // Insert the char inside doc.content at the charPos position
