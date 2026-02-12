@@ -1,32 +1,15 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 import { WebSocketContext } from '../context/wsprovider'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import './document.css'
 import { Textareav2 } from './textareav2'
-import type { Cursor } from '../types/document'
 
 export function Document({ docID }: { docID: number }) {
-  const { selectDoc, socket } = useContext(WebSocketContext)
-  const [text, setText] = useState<string>('')
-  const [documentName, setDocumentName] = useState<string>('')
-  const [cursors, setCursors] = useState<Cursor[] | null>(null)
+  const { text, documentName, cursors, selectDoc, socket } = useContext(WebSocketContext)
 
   useEffect(() => {
     selectDoc(docID)
-    socket?.on('message', (...args) => {
-      switch (args[0]['type']) {
-        case 'docComplet':
-          setText(args[0]['data'].content)
-          setDocumentName(args[0]['data'].name)
-        case 'cursor':
-          setCursors(args[0]['data'].cursors)
-      }
-    })
-
-    return () => {
-      socket?.off('message')
-    }
-  }, [docID, selectDoc, socket])
+  }, [docID, socket])
 
   return (
     <main className="docs-shell">
