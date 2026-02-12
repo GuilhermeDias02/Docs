@@ -9,6 +9,9 @@ export class DocumentService {
   constructor(private readonly db: DatabaseInterface) {
     this.db.connect().runMigrations();
   }
+  public create(docName: string): Document {
+    return this.db.post({ id: 0, name: docName, content: "" }) as Document;
+  }
 
   public getAll(): DocumentListDto[] {
     try {
@@ -76,6 +79,15 @@ export class DocumentService {
     }
 
     return docCursorPositions;
+  }
+
+  public createDoc(docName: string): Document {
+    try {
+      const newDoc = this.create(docName);
+      return newDoc;
+    } catch (error) {
+      throw new Error(`Le document n'a pas pu être créé: ${error}`);
+    }
   }
 
   public deleteCurorPos(docId: number, socketId: string): CursorPos[] {

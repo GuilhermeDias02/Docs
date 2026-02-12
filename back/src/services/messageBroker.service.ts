@@ -36,6 +36,9 @@ export class MessageBroker {
       case "doc":
         this.enterDoc(socket, message.data.docID ?? 0);
         break;
+      case "createDoc":
+        this.createDoc(socket, message.data.docName ?? "Sans titre");
+        break;
       case "addText":
         this.sendTextAfterAddition(socket, {
           wordPos: message.data.wordPos ?? 0,
@@ -92,6 +95,24 @@ export class MessageBroker {
       socket.emit("message", {
         type: "error",
         error: `Le document à l'id ${docId} n'a pas pu être récupéré: ${error}`,
+      });
+    }
+  }
+
+  private createDoc(socket: Socket, docName: string): void {
+    try {
+      this.documentService.createDoc(docName);
+      // Broadcast updated document list to all connected clients
+      this.server.emit("message", {
+        type: "liste",
+        data: {
+          docs: this.documentService.getAll(),
+        },
+      });
+    } catch (error) {
+      socket.emit("message", {
+        type: "error",
+        error: `Le document n'a pas pu être créé: ${error}`,
       });
     }
   }
