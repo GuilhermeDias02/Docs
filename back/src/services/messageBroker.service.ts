@@ -262,7 +262,7 @@ export class MessageBroker {
 
             const room = this.getSocketRoom(socket);
             const newChar = this.documentService.addChar(char, pos, this.getDocIdByRoom(room));
-            socket.to(room).emit("message", {
+            this.server.to(room).emit("message", {
                 type: "addChar",
                 data: {
                     char: newChar.char,
@@ -281,7 +281,7 @@ export class MessageBroker {
         try {
             const room = this.getSocketRoom(socket);
             const deletedPos = this.documentService.delChar(pos, this.getDocIdByRoom(room));
-            socket.to(room).emit("message", {
+            this.server.to(room).emit("message", {
                 type: "rmChar",
                 data: {
                     pos: deletedPos
