@@ -1,13 +1,18 @@
 import { Routes, Route } from 'react-router-dom'
 import { DocumentPage } from './pages/document'
 import './App.css'
+import { WebSocketProvider } from './context/wsprovider'
+import { DocumentListPage } from './pages/document-list'
 
 function App() {
   return (
-    <Routes>
-      {/* <Route path="/documents" element={<DocumentsList />} /> */}
-      <Route path="/documents/:id" element={<DocumentPage />} />
-    </Routes>
+    <WebSocketProvider>
+      <Routes>
+        {/* <Route path="/documents" element={<DocumentsList />} /> */}
+        <Route path="/documents/:id" element={<DocumentPage />} />
+        <Route path="/" element={<DocumentListPage />} />
+      </Routes>
+    </WebSocketProvider>
   )
 }
 
