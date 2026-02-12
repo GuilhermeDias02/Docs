@@ -7,6 +7,7 @@ type WebSocketContextType = {
   selectDoc: (docID: number) => void
   addText: (wordPos: number, wordText: string, additionPos: number, additionText: string) => void
   deleteText: (wordPos: number, wordText: string, deletePos: number, deleteSize: number) => void
+  sendCursor: (cursorPos: number) => void
 }
 
 export const WebSocketContext = createContext<WebSocketContextType>({
@@ -14,6 +15,7 @@ export const WebSocketContext = createContext<WebSocketContextType>({
   selectDoc: () => {},
   addText: () => {},
   deleteText: () => {},
+  sendCursor: () => {},
 })
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +53,13 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       },
     })
   }
+
+  const sendCursor = (cursorPos: number) => {
+    socket?.emit('message', {
+      type: 'cursor',
+      data: { cursorPos },
+    })
+  }
   useEffect(() => {
     const newSocket = io('http://localhost:3000', {
       transports: ['websocket', 'polling'],
@@ -63,6 +72,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <WebSocketContext.Provider value={{ socket, selectDoc, addText, deleteText }}>{children}</WebSocketContext.Provider>
+    <WebSocketContext.Provider value={{ socket, selectDoc, addText, deleteText, sendCursor }}>
+      {children}
+    </WebSocketContext.Provider>
   )
 }

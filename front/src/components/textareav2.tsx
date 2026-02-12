@@ -1,31 +1,25 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useContext } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import type { Cursor, TextAreaProps } from '../types/document'
+import { WebSocketContext } from '../context/wsprovider'
 
-export function Textareav2({ initialtext, updateCursor }: TextAreaProps) {
+export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
   const [cursors, setCursors] = useState<Cursor[]>([])
   const [text, setText] = useState(initialtext)
   const [caretPos, setCaretPos] = useState(0)
   const ref = useRef<HTMLTextAreaElement | null>(null)
   const mirrorRef = useRef<HTMLDivElement | null>(null)
   const posRef = useRef<number>(0)
+  const { sendCursor } = useContext(WebSocketContext)
 
   useEffect(() => {
     setText(initialtext)
   }, [initialtext])
 
   useEffect(() => {
-    if (!updateCursor) return
-
-    setCursors(prev => {
-      if (prev.some(cursor => cursor.socketId === updateCursor.socketId)) {
-        return prev.map(cursor =>
-          cursor.socketId === updateCursor.socketId ? { ...cursor, cursorPos: updateCursor.cursorPos } : cursor,
-        )
-      }
-      return [...prev, updateCursor]
-    })
-  }, [updateCursor])
+    if (!updateCursors) return
+    setCursors(updateCursors)
+  }, [updateCursors])
 
   const clampPosition = (position: number) => Math.max(0, Math.min(position, text.length))
 
@@ -53,8 +47,7 @@ export function Textareav2({ initialtext, updateCursor }: TextAreaProps) {
   }
 
   const handleSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
-    console.log(e.currentTarget.selectionStart)
-    // updateCaretPosition(e.currentTarget)
+    sendCursor(e.currentTarget.selectionStart)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -111,8 +104,6 @@ export function Textareav2({ initialtext, updateCursor }: TextAreaProps) {
       <TextareaAutosize
         ref={ref}
         onSelect={handleSelect}
-        onClick={handleSelect}
-        onKeyUp={handleSelect}
         onScroll={e => syncMirrorScroll(e.currentTarget)}
         onKeyDown={handleKeyDown}
         onChange={handleChange}

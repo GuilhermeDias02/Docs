@@ -5,5 +5,5 @@ export interface Cursor {
 
 export interface TextAreaProps {
   initialtext: string
-  updateCursor: Cursor | null
+  updateCursors: Cursor[] | null
 }

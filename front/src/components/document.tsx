@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { WebSocketContext } from '../context/wsprovider'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import './document.css'
@@ -9,7 +9,7 @@ export function Document({ docID }: { docID: number }) {
   const { selectDoc, socket } = useContext(WebSocketContext)
   const [text, setText] = useState<string>('')
   const [documentName, setDocumentName] = useState<string>('')
-  const [updateCursor, setUpdateCursor] = useState<Cursor | null>(null)
+  const [cursors, setCursors] = useState<Cursor[] | null>(null)
 
   useEffect(() => {
     selectDoc(docID)
@@ -18,6 +18,8 @@ export function Document({ docID }: { docID: number }) {
         case 'docComplet':
           setText(args[0]['data'].content)
           setDocumentName(args[0]['data'].name)
+        case 'cursor':
+          setCursors(args[0]['data'].cursors)
       }
     })
 
@@ -25,8 +27,6 @@ export function Document({ docID }: { docID: number }) {
       socket?.off('message')
     }
   }, [docID, selectDoc, socket])
-
-  const lines = (text ?? '').split('\n')
 
   return (
     <main className="docs-shell">
@@ -47,10 +47,9 @@ export function Document({ docID }: { docID: number }) {
             // text animation
             <p className="docs-loading text-animation-pulse">Chargement du document...</p>
           ) : (
-            <Textareav2 initialtext={text || ''} updateCursor={updateCursor} />
+            <Textareav2 initialtext={text || ''} updateCursors={cursors} />
           )}
         </article>
-        <button onClick={() => setUpdateCursor({ socketId: socket?.id || '', cursorPos: 10 })}>Update Cursor</button>
       </div>
     </main>
   )
