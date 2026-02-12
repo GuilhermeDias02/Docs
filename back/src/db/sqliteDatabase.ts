@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3';
 import { DatabaseInterface } from './database';
 import { Document } from '../models/document.model';
+import fs from "fs";
+import path from "path";
 
 export class SqliteDatabase implements DatabaseInterface {
     private db: Database.Database | null = null;
@@ -13,8 +15,19 @@ export class SqliteDatabase implements DatabaseInterface {
     public connect(): this {
         try {
             console.log("Connexion à la base de données...");
-            this.db = new Database(this.dbPath);
-            console.log("Connecté à la base de données.");
+            const absoluteDbPath = path.resolve(this.dbPath);
+            const dbDirectory = path.dirname(absoluteDbPath);
+
+            fs.mkdirSync(dbDirectory, { recursive: true });
+            if (!fs.existsSync(absoluteDbPath)) {
+                fs.closeSync(fs.openSync(absoluteDbPath, "w"));
+            }
+
+            // Validate write access upfront to avoid runtime write failures.
+            fs.accessSync(absoluteDbPath, fs.constants.R_OK | fs.constants.W_OK);
+
+            this.db = new Database(absoluteDbPath);
+            console.log(`Connecté à la base de données (${absoluteDbPath}).`);
             return this;
         } catch (error) {
             throw new Error(`Erreur lors de la connection à la base de données:\n\t${error}`);

@@ -6,7 +6,10 @@ import { DocumentListDto } from "../models/documentListDto.model";
 
 export class DocumentService {
   private cursorsPos: Map<number, CursorPos[]> = new Map<number, CursorPos[]>();
-    private isDocumentBeingModified: Map<number, boolean> = new Map<number, boolean>();
+  private isDocumentBeingModified: Map<number, boolean> = new Map<
+    number,
+    boolean
+  >();
 
   constructor(private readonly db: DatabaseInterface) {
     this.db.connect().runMigrations();
@@ -117,35 +120,81 @@ export class DocumentService {
     return this.cursorsPos.get(docId) ?? [];
   }
 
-    public addChar(char: string, charPos: number, docId: number): AddedChar {
-        try {
-            //ne pas traiter la demande si modifications en cours
-            while (this.isDocumentBeingModified.get(docId)) {
-                continue;
-            }
-            this.isDocumentBeingModified.set(docId, true);
+  public addChar(char: string, charPos: number, docId: number): AddedChar {
+    try {
+      // Reject concurrent writes for the same document.
+      if (this.isDocumentBeingModified.get(docId)) {
+        throw new Error(
+          "Le document est en cours de modification, veuillez réessayer.",
+        );
+      }
+      this.isDocumentBeingModified.set(docId, true);
 
-            let doc = this.db.get(docId);
-            if (!doc) {
-                throw new Error(`Le document à l'id ${docId} n'existe pas.`);
-            }
-            if (!doc.content || doc.content.length < charPos) {
-                throw new Error("La position du charatère n'es pqs bonne");
-            }
+      let doc = this.db.get(docId);
+      if (!doc) {
+        throw new Error(`Le document à l'id ${docId} n'existe pas.`);
+      }
+      if (!doc.content) {
+        doc.content = "";
+      }
+      if (charPos < 0 || charPos > doc.content.length) {
+        throw new Error("La position du charatère n'est pas bonne");
+      }
 
-            // Insert the char inside doc.content at the charPos position
-            const before = doc.content.slice(0, charPos);
-            const after = doc.content.slice(charPos);
-            doc.content = before + char + after;
-            this.db.update(doc);
-            this.isDocumentBeingModified.set(docId, false);
+      // Insert the char inside doc.content at the charPos position
+      if (doc.content.length == 0) {
+        doc.content = char;
+      } else {
+        const before = doc.content.slice(0, charPos);
+        const after = doc.content.slice(charPos);
+        doc.content = before + char + after;
+      }
+      this.db.update(doc);
+      this.isDocumentBeingModified.set(docId, false);
 
-            return {
-                char: char,
-                pos: charPos
-            };
-        } catch (error) {
-            throw new Error(`Erreur lors du traitement d'un nouveau caratère`)
-        }
+      return {
+        char: char,
+        pos: charPos,
+      };
+    } catch (error) {
+      this.isDocumentBeingModified.set(docId, false);
+      throw new Error(
+        `Erreur lors du traitement d'un nouveau caratère: ${error}`,
+      );
     }
+  }
+
+  public delChar(charPos: number, docId: number): number {
+    try {
+      // Reject concurrent writes for the same document.
+      if (this.isDocumentBeingModified.get(docId)) {
+        throw new Error(
+          "Le document est en cours de modification, veuillez réessayer.",
+        );
+      }
+      this.isDocumentBeingModified.set(docId, true);
+
+      let doc = this.db.get(docId);
+      if (!doc) {
+        throw new Error(`Le document à l'id ${docId} n'existe pas.`);
+      }
+      if (!doc.content || charPos < 0 || charPos >= doc.content.length) {
+        throw new Error("La position du charatère n'es pas bonne");
+      }
+
+      // Delete the character at the charPos position
+      const before = doc.content.slice(0, charPos);
+      const after = doc.content.slice(charPos + 1);
+      doc.content = before + after;
+      this.db.update(doc);
+      this.isDocumentBeingModified.set(docId, false);
+
+      return charPos;
+    } catch (error) {
+      this.isDocumentBeingModified.set(docId, false);
+      throw new Error(
+        `Erreur lors du traitement de la suppression d'un caratère: ${error}`,
+      );
+    }
+  }
 }

@@ -5,6 +5,7 @@ import { DocumentService } from "./services/document.service";
 import { SqliteDatabase } from "./db/sqliteDatabase";
 import { MessageBroker } from "./services/messageBroker.service";
 import { Message } from "./models/message.model";
+import path from "path";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -15,9 +16,14 @@ const io = new Server(httpServer, {
   },
 });
 
+const defaultDbPath = path.resolve(process.cwd(), "data", "documents.db");
+const dbPath = process.env.DB_PATH
+  ? path.resolve(process.cwd(), process.env.DB_PATH)
+  : defaultDbPath;
+
 const messageBrokerService = new MessageBroker(
   io,
-  new DocumentService(new SqliteDatabase("documents.db")),
+  new DocumentService(new SqliteDatabase(dbPath)),
 );
 
 io.on("connection", (socket) => {
