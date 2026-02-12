@@ -1,9 +1,11 @@
 import { useEffect, useState, createContext } from 'react'
 import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
+import type { DocListItem } from '../types/document-list'
 
 type WebSocketContextType = {
   socket: Socket | null
+  documentList: DocListItem[]
   selectDoc: (docID: number) => void
   addText: (wordPos: number, wordText: string, additionPos: number, additionText: string) => void
   deleteText: (wordPos: number, wordText: string, deletePos: number, deleteSize: number) => void
@@ -12,6 +14,7 @@ type WebSocketContextType = {
 
 export const WebSocketContext = createContext<WebSocketContextType>({
   socket: null,
+  documentList: [],
   selectDoc: () => {},
   addText: () => {},
   deleteText: () => {},
@@ -20,6 +23,7 @@ export const WebSocketContext = createContext<WebSocketContextType>({
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
+  const [documentList, setDocumentList] = useState<DocListItem[]>([])
 
   const selectDoc = (docID: number) => {
     socket?.emit('message', {
@@ -66,13 +70,20 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     })
     setSocket(newSocket)
 
+    newSocket.on('message', (...args) => {
+      if (args[0]?.type === 'liste') {
+        console.log('Received doc list', args[0]['data'].docs)
+        setDocumentList(args[0]['data'].docs)
+      }
+    })
+
     return () => {
       newSocket.close()
     }
   }, [])
 
   return (
-    <WebSocketContext.Provider value={{ socket, selectDoc, addText, deleteText, sendCursor }}>
+    <WebSocketContext.Provider value={{ socket, documentList, selectDoc, addText, deleteText, sendCursor }}>
       {children}
     </WebSocketContext.Provider>
   )
