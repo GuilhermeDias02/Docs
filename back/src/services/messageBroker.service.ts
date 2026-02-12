@@ -282,7 +282,7 @@ export class MessageBroker {
             const room = this.getSocketRoom(socket);
             const deletedPos = this.documentService.delChar(pos, this.getDocIdByRoom(room));
             socket.to(room).emit("message", {
-                type: "addChar",
+                type: "rmChar",
                 data: {
                     pos: deletedPos
                 }
