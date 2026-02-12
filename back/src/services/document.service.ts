@@ -1,8 +1,11 @@
 import { DatabaseInterface } from "../db/database";
+import { CursorPos } from "../models/cursor.model";
 import { Document } from "../models/document.model";
 import { DocumentListDto } from "../models/documentListDto.model";
 
 export class DocumentService {
+    private cursorsPos: Map<number, CursorPos[]> = new Map<number, CursorPos[]>();
+
     constructor(private readonly db: DatabaseInterface) {
         this.db.connect()
             .runMigrations();
@@ -29,5 +32,38 @@ export class DocumentService {
         } catch (error) {
             throw new Error(`Erreur lors du traitement du Document à l'id ${id}:\n\t${error}`);
         }
+    }
+
+    public updateContent(id: number, newContent: string): Document {
+        try {
+            let doc = this.db.get(id);
+            if (!doc) {
+                throw new Error(`Il n'existe aucun document avec l'id ${id}`);
+            }
+
+            doc.content = newContent;
+            return this.db.update(doc);
+        } catch (error) {
+            throw new Error(`Erreur lors du traitement du Document à l'id ${id}:\n\t${error}`);
+        }
+    }
+
+    public setCursorPos(docId: number, socketId: string, cursorPos: number): CursorPos[] {
+        // Get existing cursor positions for this document, or initialize a new array
+        let docCursorPositions = this.cursorsPos.get(docId);
+        if (!docCursorPositions) {
+            docCursorPositions = [];
+            this.cursorsPos.set(docId, docCursorPositions);
+        }
+
+        // Ensure uniqueness per socketId: update if exists, otherwise push a new entry
+        const existing = docCursorPositions.find((pos: CursorPos) => pos.socketId === socketId);
+        if (existing) {
+            existing.cursorPos = cursorPos;
+        } else {
+            docCursorPositions.push({ socketId, cursorPos });
+        }
+
+        return docCursorPositions;
     }
 }
