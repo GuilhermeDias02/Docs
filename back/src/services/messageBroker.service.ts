@@ -196,8 +196,8 @@ export class MessageBroker {
     }
 
     public disconnect(socket: Socket): void {
-        socket.rooms.forEach((room) => socket.leave(room));
         this.documentService.deleteCurorPos(this.getDocIdByRoom(this.getSocketRoom(socket)), socket.id);
+        socket.rooms.forEach((room) => socket.leave(room));
 
         console.log('Client déconnecté:', socket.id);
     }
