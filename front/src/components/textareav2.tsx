@@ -6,11 +6,28 @@ import { WebSocketContext } from '../context/wsprovider'
 export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
   const [cursors, setCursors] = useState<Cursor[]>([])
   const [text, setText] = useState(initialtext)
-  const [caretPos, setCaretPos] = useState(0)
   const ref = useRef<HTMLTextAreaElement | null>(null)
   const mirrorRef = useRef<HTMLDivElement | null>(null)
   const posRef = useRef<number>(0)
-  const { sendCursor, socket } = useContext(WebSocketContext)
+  const { sendCursor, socket, newChar, removedChar, addChar, removeChar } = useContext(WebSocketContext)
+
+  // function to add a char at the specific position in the string
+  const addCharAtPosition = (char: string, pos: number) => {
+    setText(prev => prev.slice(0, pos) + char + prev.slice(pos))
+  }
+
+  const removeCharAtPosition = (pos: number) => {
+    setText(prev => prev.slice(0, pos) + prev.slice(pos + 1))
+  }
+
+  useEffect(() => {
+    if (newChar) {
+      addCharAtPosition(newChar.char, newChar.pos)
+    }
+    if (removedChar) {
+      removeCharAtPosition(removedChar.pos)
+    }
+  }, [newChar, removedChar])
 
   useEffect(() => {
     setText(initialtext)
@@ -43,12 +60,15 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Backspace') {
       console.log('DEL', posRef.current)
+      removeChar(posRef.current - 1)
     } else {
       console.log('ADD', e.key, posRef.current + 1)
+      addChar(e.key, posRef.current + 1)
     }
   }
 
   const handleSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    posRef.current = e.currentTarget.selectionStart
     sendCursor(e.currentTarget.selectionStart)
   }
 
@@ -112,7 +132,6 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
         className="docs-page2 docs-page2-input"
         value={text}
       />
-      <div className="docs-page2-indicator">Cursor position: {caretPos}</div>
     </div>
   )
 }

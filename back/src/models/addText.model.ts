@@ -9,3 +9,8 @@ export interface TextAdded {
     wordPos: number,
     wordText: string,
 }
+
+export interface AddedChar {
+    char: string,
+    pos: number,
+}

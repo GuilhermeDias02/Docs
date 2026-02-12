@@ -46,6 +46,9 @@ export class MessageBroker {
           additionPos: message.data.additionPos ?? 0,
           additionText: message.data.additionText ?? "",
         } as TextToAdd);
+            break;
+        case "addChar":
+
         break;
       case "cursor":
         const cursorPos = message.data.cursorPos;
@@ -247,4 +250,23 @@ export class MessageBroker {
 
     console.log("Client déconnecté:", socket.id);
   }
+
+    public addChar(socket: Socket, char: string, pos: number): void {
+        try {
+            const room = this.getSocketRoom(socket);
+            const newChar = this.documentService.addChar(char, pos, this.getDocIdByRoom(room));
+            socket.to(room).emit("message", {
+                type: "addChar",
+                data: {
+                    char: newChar.char,
+                    pos: newChar.pos
+                }
+            });
+        } catch (error) {
+            socket.emit("message", {
+                type: "error",
+                error: `Erreur lors de l'ajout d'un nouveau charactère {char:${char}, pos:${pos}}:\n\t${error}`,
+            });
+        }
+    }
 }
