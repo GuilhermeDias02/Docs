@@ -58,12 +58,23 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return
+
     if (e.key === 'Backspace') {
       console.log('DEL', posRef.current)
       removeChar(posRef.current - 1)
-    } else {
-      console.log('ADD', e.key, posRef.current + 1)
-      addChar(e.key, posRef.current + 1)
+      return
+    }
+
+    if (e.key === 'Enter') {
+      console.log('ADD', '\\n', posRef.current)
+      addChar('\n', posRef.current)
+      return
+    }
+
+    if (e.key.length === 1) {
+      console.log('ADD', e.key, posRef.current)
+      addChar(e.key, posRef.current)
     }
   }
 

@@ -55,7 +55,7 @@ export class MessageBroker {
             break;
       case "cursor":
         const cursorPos = message.data.cursorPos;
-        if (cursorPos) {
+        if (cursorPos !== undefined && cursorPos !== null) {
           this.sendCursors(socket, cursorPos);
         } else {
           socket.emit("message", {
