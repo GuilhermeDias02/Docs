@@ -75,6 +75,14 @@ export class MessageBroker {
         type: "docComplet",
         data: this.documentService.getById(docId),
       });
+      const cursorPos = this.documentService.getCursorPos(docId);
+      const room = this.getSocketRoom(socket);
+      this.server.to(room).emit("message", {
+        type: "cursor",
+        data: {
+          cursors: cursorPos,
+        },
+      });
     } catch (error) {
       const roomName = `doc_${docId}`;
       if (socket.rooms.has(roomName)) {

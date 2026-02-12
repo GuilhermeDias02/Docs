@@ -10,7 +10,7 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
   const ref = useRef<HTMLTextAreaElement | null>(null)
   const mirrorRef = useRef<HTMLDivElement | null>(null)
   const posRef = useRef<number>(0)
-  const { sendCursor } = useContext(WebSocketContext)
+  const { sendCursor, socket } = useContext(WebSocketContext)
 
   useEffect(() => {
     setText(initialtext)
@@ -18,7 +18,9 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
 
   useEffect(() => {
     if (!updateCursors) return
-    setCursors(updateCursors)
+    // remove socket.id from updateCursors
+    const updatedCursors = updateCursors.filter(cursor => cursor.socketId !== socket?.id)
+    setCursors(updatedCursors)
   }, [updateCursors])
 
   const clampPosition = (position: number) => Math.max(0, Math.min(position, text.length))
