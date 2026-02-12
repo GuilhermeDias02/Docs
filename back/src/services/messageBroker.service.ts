@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { DocumentService } from "./document.service";
 import { Message } from '../models/message.model';
 import { TextAdded, TextToAdd } from '../models/addText.model';
+import { CursorPos } from '../models/cursor.model';
 
 export class MessageBroker {
     private isDocBeingModified: Map<number, boolean> = new Map<number, boolean>(null);
@@ -40,6 +41,14 @@ export class MessageBroker {
                     } as TextToAdd
                 );
                 break;
+            case "cursor":
+                const cursorPos = message.data.cursorPos
+                if (cursorPos) {
+                    this.sendCursors(socket, cursorPos);
+                } else {
+                    socket.emit("message", { type: "error", error: "Please send a valid cursor position value" });
+                }
+                break;
             default:
                 socket.emit("message", {
                     type: "error",
@@ -49,7 +58,7 @@ export class MessageBroker {
         }
     }
 
-    public enterDoc(socket: Socket, docId: number): void {
+    private enterDoc(socket: Socket, docId: number): void {
         try {
             if (docId <= 0) {
                 throw new Error("Le numéro doit être supérieur ou égal à 0.");
@@ -73,21 +82,13 @@ export class MessageBroker {
         }
     }
 
-    public sendTextAfterAddition(socket: Socket, textToAdd: TextToAdd): void {
+    private sendTextAfterAddition(socket: Socket, textToAdd: TextToAdd): void {
         try {
-            const firstRoom = socket.rooms.values().next().value;
-            if (!firstRoom) {
-                throw new Error("Le socket n'est dans aucun document");
-            }
+            const room = this.getSocketRoom(socket);
+            const docId = this.getDocIdByRoom(room);
+            const newContent = this.addText(docId, textToAdd);
 
-            const match = /^doc_(\d+)$/.exec(firstRoom);
-            if (!match) {
-                throw new Error("Nom de salle invalide.");
-            }
-            const id = Number(match[1]);
-            const newContent = this.addText(id, textToAdd);
-
-            this.server.to(firstRoom).emit("message", { type: "addText", data: newContent });
+            this.server.to(room).emit("message", { type: "addText", data: newContent });
         } catch (error) {
             socket.emit("message", {
                 type: "error",
@@ -129,7 +130,53 @@ export class MessageBroker {
             this.documentService.updateContent(doc.id, newContent);
             return newWord;
         } catch (error) {
-            throw new Error(`${error}`);
+            throw error;
+        }
+    }
+
+    private sendCursors(socket: Socket, cursorPos: number): void {
+        try {
+            const room = this.getSocketRoom(socket);
+            const docId = this.getDocIdByRoom(room);
+
+            const cursors = this.documentService.setCursorPos(docId, socket.id, cursorPos);
+
+            this.server.to(room).emit("message", {
+                type: "cursor",
+                data: {
+                    cursors
+                }
+            });
+        } catch (error) {
+            socket.emit("message", {
+                type: "error",
+                error: `La position des curseurs n'a pas pu être mise à jour:\n\t${error}`
+            });
+        }
+    }
+
+    private getSocketRoom(socket: Socket): string {
+        try {
+            const firstRoom = socket.rooms.values().next().value;
+            if (!firstRoom) {
+                throw new Error("Le socket n'est dans aucun document");
+            }
+
+            return firstRoom;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    private getDocIdByRoom(roomName: string): number {
+        try {
+            const match = /^doc_(\d+)$/.exec(roomName);
+            if (!match) {
+                throw new Error("Nom de salle invalide.");
+            }
+            return Number(match[1]);
+        } catch (error) {
+            throw error;
         }
     }
 }

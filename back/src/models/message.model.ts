@@ -5,7 +5,7 @@ export interface Message {
         wordPos?: number,
         wordText?: string,
         additionPos?: number,
-        additionText?: string
-
+        additionText?: string,
+        cursorPos?: number
     }
 }
