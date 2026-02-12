@@ -134,9 +134,13 @@ export class DocumentService {
             }
 
             // Insert the char inside doc.content at the charPos position
-            const before = doc.content.slice(0, charPos);
-            const after = doc.content.slice(charPos);
-            doc.content = before + char + after;
+            if (doc.content.length == 0) {
+                doc.content = char;
+            } else {
+                const before = doc.content.slice(0, charPos);
+                const after = doc.content.slice(charPos);
+                doc.content = before + char + after;
+            }
             this.db.update(doc);
             this.isDocumentBeingModified.set(docId, false);
 
