@@ -12,12 +12,15 @@ class MessageBroker {
             socket.emit("message", {
                 type: "liste",
                 data: {
-                    docs: this.documentService.getAll()
-                }
+                    docs: this.documentService.getAll(),
+                },
             });
         }
         catch (error) {
-            socket.emit(JSON.stringify({ type: "error", error: "Les documents n'ont pas pu être récupérés" }));
+            socket.emit(JSON.stringify({
+                type: "error",
+                error: "Les documents n'ont pas pu être récupérés",
+            }));
         }
     }
     messageManager(socket, message) {
@@ -31,13 +34,25 @@ class MessageBroker {
                     wordPos: (_b = message.data.wordPos) !== null && _b !== void 0 ? _b : 0,
                     wordText: (_c = message.data.wordText) !== null && _c !== void 0 ? _c : "",
                     additionPos: (_d = message.data.additionPos) !== null && _d !== void 0 ? _d : 0,
-                    additionText: (_e = message.data.additionText) !== null && _e !== void 0 ? _e : ""
+                    additionText: (_e = message.data.additionText) !== null && _e !== void 0 ? _e : "",
                 });
+                break;
+            case "cursor":
+                const cursorPos = message.data.cursorPos;
+                if (cursorPos) {
+                    this.sendCursors(socket, cursorPos);
+                }
+                else {
+                    socket.emit("message", {
+                        type: "error",
+                        error: "Please send a valid cursor position value",
+                    });
+                }
                 break;
             default:
                 socket.emit("message", {
                     type: "error",
-                    error: "Type de message inconnu."
+                    error: "Type de message inconnu.",
                 });
                 break;
         }
@@ -50,7 +65,15 @@ class MessageBroker {
             socket.join(`doc_${docId}`);
             socket.emit("message", {
                 type: "docComplet",
-                data: this.documentService.getById(docId)
+                data: this.documentService.getById(docId),
+            });
+            const cursorPos = this.documentService.getCursorPos(docId);
+            const room = this.getSocketRoom(socket);
+            this.server.to(room).emit("message", {
+                type: "cursor",
+                data: {
+                    cursors: cursorPos,
+                },
             });
         }
         catch (error) {
@@ -60,28 +83,23 @@ class MessageBroker {
             }
             socket.emit("message", {
                 type: "error",
-                error: `Le document à l'id ${docId} n'a pas pu être récupéré: ${error}`
+                error: `Le document à l'id ${docId} n'a pas pu être récupéré: ${error}`,
             });
         }
     }
     sendTextAfterAddition(socket, textToAdd) {
         try {
-            const firstRoom = socket.rooms.values().next().value;
-            if (!firstRoom) {
-                throw new Error("Le socket n'est dans aucun document");
-            }
-            const match = /^doc_(\d+)$/.exec(firstRoom);
-            if (!match) {
-                throw new Error("Nom de salle invalide.");
-            }
-            const id = Number(match[1]);
-            const newContent = this.addText(id, textToAdd);
-            this.server.to(firstRoom).emit("message", { type: "addText", data: newContent });
+            const room = this.getSocketRoom(socket);
+            const docId = this.getDocIdByRoom(room);
+            const newContent = this.addText(docId, textToAdd);
+            this.server
+                .to(room)
+                .emit("message", { type: "addText", data: newContent });
         }
         catch (error) {
             socket.emit("message", {
                 type: "error",
-                error: `Le document n'a pas pu être modifié:\n\t${error}`
+                error: `Le document n'a pas pu être modifié:\n\t${error}`,
             });
         }
     }
@@ -108,7 +126,7 @@ class MessageBroker {
                     //traitement du nouveau contenu
                     newWord = {
                         wordPos: 1,
-                        wordText: "ghjokp"
+                        wordText: "ghjokp",
                     };
                 }
                 else {
@@ -119,8 +137,64 @@ class MessageBroker {
             return newWord;
         }
         catch (error) {
-            throw new Error(`${error}`);
+            throw error;
         }
+    }
+    sendCursors(socket, cursorPos) {
+        try {
+            const room = this.getSocketRoom(socket);
+            const docId = this.getDocIdByRoom(room);
+            const cursors = this.documentService.setCursorPos(docId, socket.id, cursorPos);
+            this.server.to(room).emit("message", {
+                type: "cursor",
+                data: {
+                    cursors,
+                },
+            });
+        }
+        catch (error) {
+            socket.emit("message", {
+                type: "error",
+                error: `La position des curseurs n'a pas pu être mise à jour:\n\t${error}`,
+            });
+        }
+    }
+    getSocketRoom(socket) {
+        // The socket.rooms is a Set containing all joined rooms, including the socket id.
+        // We want the first custom room (whose name starts with 'doc_').
+        for (const room of socket.rooms) {
+            if (room.startsWith("doc_")) {
+                return room;
+            }
+        }
+        throw new Error("Le socket n'est dans aucun document");
+    }
+    getSocketDocRoomOrNull(socket) {
+        for (const room of socket.rooms) {
+            if (room.startsWith("doc_")) {
+                return room;
+            }
+        }
+        return null;
+    }
+    getDocIdByRoom(roomName) {
+        const match = /^doc_(\d+)$/.exec(roomName);
+        if (!match) {
+            throw new Error("Nom de salle invalide.");
+        }
+        return Number(match[1]);
+    }
+    disconnect(socket) {
+        const room = this.getSocketDocRoomOrNull(socket);
+        if (room) {
+            this.server.to(room).emit("message", {
+                type: "cursor",
+                data: {
+                    cursors: this.documentService.deleteCurorPos(this.getDocIdByRoom(room), socket.id),
+                },
+            });
+        }
+        console.log("Client déconnecté:", socket.id);
     }
 }
 exports.MessageBroker = MessageBroker;

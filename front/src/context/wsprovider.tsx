@@ -70,14 +70,17 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     })
     setSocket(newSocket)
 
-    newSocket.on('message', (...args) => {
+    const handleMessage = (...args: any[]) => {
       if (args[0]?.type === 'liste') {
         console.log('Received doc list', args[0]['data'].docs)
         setDocumentList(args[0]['data'].docs)
       }
-    })
+    }
+
+    newSocket.on('message', handleMessage)
 
     return () => {
+      newSocket.off('message', handleMessage)
       newSocket.close()
     }
   }, [])
