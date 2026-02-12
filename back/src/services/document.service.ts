@@ -129,7 +129,7 @@ export class DocumentService {
             if (!doc) {
                 throw new Error(`Le document à l'id ${docId} n'existe pas.`);
             }
-            if (!doc.content || doc.content.length < charPos) {
+            if (!doc.content || doc.content.length < charPos - 1) {
                 throw new Error("La position du charatère n'es pas bonne");
             }
 
@@ -142,9 +142,10 @@ export class DocumentService {
 
             return {
                 char: char,
-                pos: charPos
+                pos: charPos - 1
             };
         } catch (error) {
+            this.isDocumentBeingModified.set(docId, false);
             throw new Error(`Erreur lors du traitement d'un nouveau caratère`)
         }
     }
@@ -174,6 +175,7 @@ export class DocumentService {
 
             return charPos;
         } catch (error) {
+            this.isDocumentBeingModified.set(docId, false);
             throw new Error(`Erreur lors du traitement de la suppression d'un caratère`);
         }
     }
