@@ -51,11 +51,11 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
     return `hsl(${hue} 80% 45%)`
   }
 
-  const syncMirrorScroll = (element: HTMLTextAreaElement) => {
-    if (!mirrorRef.current) return
-    mirrorRef.current.scrollTop = element.scrollTop
-    mirrorRef.current.scrollLeft = element.scrollLeft
-  }
+  // const syncMirrorScroll = (element: HTMLTextAreaElement) => {
+  //   if (!mirrorRef.current) return
+  //   mirrorRef.current.scrollTop = element.scrollTop
+  //   mirrorRef.current.scrollLeft = element.scrollLeft
+  // }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return
@@ -137,7 +137,6 @@ export function Textareav2({ initialtext, updateCursors }: TextAreaProps) {
       <TextareaAutosize
         ref={ref}
         onSelect={handleSelect}
-        onScroll={e => syncMirrorScroll(e.currentTarget)}
         onKeyDown={handleKeyDown}
         onChange={handleChange}
         className="docs-page2 docs-page2-input"

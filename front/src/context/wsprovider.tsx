@@ -3,6 +3,8 @@ import { io } from 'socket.io-client'
 import type { Socket } from 'socket.io-client'
 import type { DocListItem } from '../types/document-list'
 import type { Cursor } from '../types/document'
+import type { TextEvent } from '../types/document'
+import examples from '../utils/examples'
 type WebSocketContextType = {
   socket: Socket | null
   selectDoc: (docID: number) => void
@@ -12,12 +14,13 @@ type WebSocketContextType = {
   sendCursor: (cursorPos: number) => void
   addChar: (char: string, pos: number) => void
   removeChar: (pos: number) => void
+  setText: (text: string) => void
   documents: DocListItem[]
   text: string
   documentName: string
   cursors: Cursor[] | null
-  newChar: { char: string; pos: number } | null
-  removedChar: { pos: number } | null
+  textEvent: TextEvent | null
+  setTextEvent: (textEvent: TextEvent | null) => void
 }
 
 export const WebSocketContext = createContext<WebSocketContextType>({
@@ -29,12 +32,13 @@ export const WebSocketContext = createContext<WebSocketContextType>({
   sendCursor: () => {},
   addChar: () => {},
   removeChar: () => {},
+  setText: () => {},
   documents: [],
   text: '',
   documentName: '',
   cursors: null,
-  newChar: null,
-  removedChar: null,
+  textEvent: null,
+  setTextEvent: () => {},
 })
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
@@ -42,8 +46,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [documents, setDocuments] = useState<DocListItem[]>([])
   const [text, setText] = useState<string>('')
   const [documentName, setDocumentName] = useState<string>('')
-  const [newChar, setNewChar] = useState<{ char: string; pos: number } | null>(null)
-  const [removedChar, setRemovedChar] = useState<{ pos: number } | null>(null)
+  const [textEvent, setTextEvent] = useState<TextEvent | null>(null)
   const [cursors, setCursors] = useState<Cursor[] | null>(null)
   const selectDoc = (docID: number) => {
     socket?.emit('message', {
@@ -130,10 +133,10 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           setCursors(args[0]['data'].cursors)
           break
         case 'addChar':
-          setNewChar({ char: args[0]['data'].char, pos: args[0]['data'].pos })
+          setTextEvent({ type: 'addChar', data: { char: args[0]['data'].char, pos: args[0]['data'].pos } })
           break
         case 'rmChar':
-          setRemovedChar({ pos: args[0]['data'].pos })
+          setTextEvent({ type: 'removeChar', data: { pos: args[0]['data'].pos } })
           break
       }
     })
@@ -152,11 +155,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         addText,
         deleteText,
         sendCursor,
-        newChar,
-        removedChar,
         documents,
         addChar,
         removeChar,
+        setTextEvent,
+        textEvent,
+        setText,
         text,
         documentName,
         cursors,

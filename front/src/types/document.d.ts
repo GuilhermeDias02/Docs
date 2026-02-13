@@ -7,3 +7,11 @@ export interface TextAreaProps {
   initialtext: string
   updateCursors: Cursor[] | null
 }
+
+export type TextEvent = {
+  type: 'addChar' | 'removeChar'
+  data: {
+    char?: string
+    pos: number
+  }
+}

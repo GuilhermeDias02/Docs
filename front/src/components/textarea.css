@@ -1,0 +1,6 @@
+.textarea {
+  resize: none;
+  width: 70vw;
+  overflow: hidden;
+  min-height: 1.5em;
+}

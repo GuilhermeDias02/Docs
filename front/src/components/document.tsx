@@ -1,15 +1,38 @@
-import { useContext, useEffect } from 'react'
+import { useRef, useContext, useEffect } from 'react'
 import { WebSocketContext } from '../context/wsprovider'
 import { DocumentIcon } from '@heroicons/react/24/outline'
 import './document.css'
-import { Textareav2 } from './textareav2'
+import { Textareav3 } from './textareav3'
+import type { TextareaApi } from './textareav3'
+import type { TextEvent } from '../types/document'
 
 export function Document({ docID }: { docID: number }) {
-  const { text, documentName, cursors, selectDoc, socket } = useContext(WebSocketContext)
+  const { documentName, text, setText, textEvent, selectDoc, socket, addChar, removeChar } =
+    useContext(WebSocketContext)
+  const textareaRef = useRef<TextareaApi>(null)
+
+  const handleTextEvent = (event: TextEvent) => {
+    if (event.type === 'addChar') {
+      addChar(event.data.char ?? '', event.data.pos)
+    }
+    if (event.type === 'removeChar') {
+      removeChar(event.data.pos)
+    }
+  }
 
   useEffect(() => {
     selectDoc(docID)
   }, [docID, socket])
+
+  useEffect(() => {
+    if (!textEvent) return
+    if (textEvent.type === 'addChar') {
+      textareaRef.current?.insertAt(textEvent.data.pos, textEvent.data.char ?? '')
+    }
+    if (textEvent.type === 'removeChar') {
+      textareaRef.current?.removeAt(textEvent.data.pos)
+    }
+  }, [textEvent])
 
   return (
     <main className="docs-shell">
@@ -30,7 +53,7 @@ export function Document({ docID }: { docID: number }) {
             // text animation
             <p className="docs-loading text-animation-pulse">Chargement du document...</p>
           ) : (
-            <Textareav2 initialtext={text || ''} updateCursors={cursors} />
+            <Textareav3 updateEvent={handleTextEvent} ref={textareaRef} text={text || ''} setText={setText} />
           )}
         </article>
       </div>
