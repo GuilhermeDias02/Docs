@@ -122,13 +122,13 @@ export class DocumentService {
 
   public addChar(char: string, charPos: number, docId: number): AddedChar {
     try {
-      // Reject concurrent writes for the same document.
-      if (this.isDocumentBeingModified.get(docId)) {
-        throw new Error(
-          "Le document est en cours de modification, veuillez réessayer.",
-        );
-      }
-      this.isDocumentBeingModified.set(docId, true);
+        // queue writes for the same document.
+        while (this.isDocumentBeingModified.get(docId)) {
+            //     throw new Error(
+            //       "Le document est en cours de modification, veuillez réessayer.",
+            //     );
+        }
+        this.isDocumentBeingModified.set(docId, true);
 
       let doc = this.db.get(docId);
       if (!doc) {
@@ -150,14 +150,14 @@ export class DocumentService {
         doc.content = before + char + after;
       }
       this.db.update(doc);
-      this.isDocumentBeingModified.set(docId, false);
+        this.isDocumentBeingModified.set(docId, false);
 
       return {
         char: char,
         pos: charPos,
       };
     } catch (error) {
-      this.isDocumentBeingModified.set(docId, false);
+        this.isDocumentBeingModified.set(docId, false);
       throw new Error(
         `Erreur lors du traitement d'un nouveau caratère: ${error}`,
       );
@@ -166,13 +166,13 @@ export class DocumentService {
 
   public delChar(charPos: number, docId: number): number {
     try {
-      // Reject concurrent writes for the same document.
-      if (this.isDocumentBeingModified.get(docId)) {
-        throw new Error(
-          "Le document est en cours de modification, veuillez réessayer.",
-        );
-      }
-      this.isDocumentBeingModified.set(docId, true);
+        // queue deletes on the same document.
+        while (this.isDocumentBeingModified.get(docId)) {
+            //     throw new Error(
+            //       "Le document est en cours de modification, veuillez réessayer.",
+            //     );
+        }
+        this.isDocumentBeingModified.set(docId, true);
 
       let doc = this.db.get(docId);
       if (!doc) {
@@ -187,11 +187,11 @@ export class DocumentService {
       const after = doc.content.slice(charPos + 1);
       doc.content = before + after;
       this.db.update(doc);
-      this.isDocumentBeingModified.set(docId, false);
+        this.isDocumentBeingModified.set(docId, false);
 
       return charPos;
     } catch (error) {
-      this.isDocumentBeingModified.set(docId, false);
+        this.isDocumentBeingModified.set(docId, false);
       throw new Error(
         `Erreur lors du traitement de la suppression d'un caratère: ${error}`,
       );
